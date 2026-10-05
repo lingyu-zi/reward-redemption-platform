@@ -1,29 +1,34 @@
-Reward Redemption Platform
+# Reward Redemption Platform
 
-Spring Boot backend system for managing customers,
-rewards accounts, reward catalogs, carts, and redemptions.
+Spring Boot backend system for managing customers, rewards accounts, reward catalogs, redemption carts, and reward redemptions.
 
-Tech Stack
-• Java 17
-• Spring Boot
-• Spring Data JPA / Hibernate
-• MySQL
-• Flyway
-• MapStruct
-• Lombok
+## Tech Stack
 
-Current Progress
-✅ Customer
-✅ Rewards Account
-✅ Reward Category
-✅ Merchant
-✅ Reward
-✅ Redemption Cart
-🚧 Redemption
-⬜ Spring Security
+- Java 17
+- Spring Boot
+- Spring Data JPA / Hibernate
+- MySQL
+- Flyway
+- MapStruct
+- Lombok
 
-V2
-⬜ Transactions
-⬜ Kafka
-⬜ Points Processing
-⬜ Cassandra Activity History
+## Current Progress
+
+### V1 — Core Platform
+
+- ✅ Customer
+- ✅ Rewards Account
+- ✅ Reward Category
+- ✅ Merchant
+- ✅ Reward
+- ✅ Redemption Cart
+- ✅ Redemption
+
+### V2 — Distributed & Event-Driven Architecture
+
+1. ⬜ Cassandra Activity History
+2. ⬜ Transaction Domain
+3. ⬜ Apache Kafka
+4. ⬜ Points Processing
+5. ⬜ Microservice Split
+6. ⬜ Spring Security
