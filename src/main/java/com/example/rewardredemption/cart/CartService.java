@@ -56,7 +56,7 @@ public class CartService {
         RedemptionCartItem cartItem;
         if (existingItem.isPresent()) {
             cartItem = existingItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
+            cartItem.increaseQuantity(request.getQuantity());
         } else {
             cartItem = new RedemptionCartItem();
             cartItem.setCart(cart);

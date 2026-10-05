@@ -1,6 +1,5 @@
-package com.example.rewardredemption.cart;
+package com.example.rewardredemption.redemption;
 
-import com.example.rewardredemption.cart.dto.AddCartItemRequest;
 import com.example.rewardredemption.reward.Reward;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -10,16 +9,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "redemption_cart_items")
-public class RedemptionCartItem {
+@Table(name = "redemption_items")
+public class RedemptionItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private RedemptionCart cart;
+    @JoinColumn(name = "redemption_id", nullable = false)
+    private Redemption redemption;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "reward_id", nullable = false)
@@ -28,12 +27,10 @@ public class RedemptionCartItem {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    public Long getTotalPoints(){
-        return reward.getPointsCost() * quantity;
-    }
+    @Column(name = "points_cost", nullable = false)
+    private Long pointsCost;
 
-    public void increaseQuantity(Integer quantity) {
-        this.quantity += quantity;
+    public Long getTotalPoints() {
+        return quantity * pointsCost;
     }
-
 }

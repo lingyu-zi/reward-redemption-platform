@@ -34,4 +34,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", exception.getMessage()));
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, String>> handleBadRequest(
+            BadRequestException exception) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", exception.getMessage()));
+    }
 }
