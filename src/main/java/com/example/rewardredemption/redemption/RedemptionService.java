@@ -1,9 +1,11 @@
 package com.example.rewardredemption.redemption;
 
+import com.example.rewardredemption.activity.CustomerActivityService;
 import com.example.rewardredemption.cart.RedemptionCartRepository;
 import com.example.rewardredemption.exception.BadRequestException;
 import com.example.rewardredemption.exception.ResourceNotFoundException;
 import com.example.rewardredemption.redemption.dto.RedemptionResponse;
+import com.example.rewardredemption.reward.Reward;
 import com.example.rewardredemption.rewardsaccount.RewardsAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ public class RedemptionService {
     private final RedemptionCartRepository redemptionCartRepository;
     private final RewardsAccountRepository rewardsAccountRepository;
     private final RedemptionMapper redemptionMapper;
+    private final CustomerActivityService customerActivityService;
 
     @Transactional
     public RedemptionResponse redeem(Long cartId) {
@@ -63,6 +66,12 @@ public class RedemptionService {
         cart.clearCart();
         savedRedemption.setStatus(RedemptionStatus.COMPLETED);
         redemptionRepository.flush();
+        List<Long> rewardIds = savedRedemption.getRedemptionItems().stream().
+                map(item -> item.getReward().getId()).toList();
+        customerActivityService.recordRedemptionCompleted(
+                savedRedemption.getCustomer().getId(),
+                savedRedemption.getId(), rewardIds, savedRedemption.getTotalPoints());
+
         return redemptionMapper.toRedemptionResponse(savedRedemption);
     }
 
