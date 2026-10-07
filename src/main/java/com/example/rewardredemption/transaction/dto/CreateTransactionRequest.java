@@ -1,4 +1,4 @@
-package com.example.rewardredemption.transcation.dto;
+package com.example.rewardredemption.transaction.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

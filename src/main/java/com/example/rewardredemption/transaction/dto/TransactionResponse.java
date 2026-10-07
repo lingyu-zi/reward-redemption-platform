@@ -1,6 +1,6 @@
-package com.example.rewardredemption.transcation.dto;
+package com.example.rewardredemption.transaction.dto;
 
-import com.example.rewardredemption.transcation.TransactionStatus;
+import com.example.rewardredemption.transaction.TransactionStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;

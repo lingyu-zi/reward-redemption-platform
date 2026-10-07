@@ -1,4 +1,4 @@
-package com.example.rewardredemption.transcation;
+package com.example.rewardredemption.transaction;
 
 public enum TransactionStatus {
     PENDING,

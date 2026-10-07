@@ -1,7 +1,6 @@
-package com.example.rewardredemption.transcation;
+package com.example.rewardredemption.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 
 import java.util.List;
 import java.util.Optional;

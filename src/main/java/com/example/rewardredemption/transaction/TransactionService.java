@@ -1,15 +1,16 @@
-package com.example.rewardredemption.transcation;
+package com.example.rewardredemption.transaction;
 
 import com.example.rewardredemption.customer.CustomerRepository;
 import com.example.rewardredemption.exception.BadRequestException;
 import com.example.rewardredemption.exception.ResourceNotFoundException;
 import com.example.rewardredemption.merchant.MerchantRepository;
-import com.example.rewardredemption.transcation.dto.CreateTransactionRequest;
-import com.example.rewardredemption.transcation.dto.TransactionResponse;
+import com.example.rewardredemption.transaction.dto.CreateTransactionRequest;
+import com.example.rewardredemption.transaction.dto.TransactionResponse;
+import com.example.rewardredemption.transaction.event.TransactionCompletedEvent;
+import com.example.rewardredemption.transaction.event.TransactionEventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class TransactionService {
     private final CustomerRepository customerRepository;
     private final MerchantRepository merchantRepository;
     private final TransactionMapper transactionMapper;
+    private final TransactionEventProducer transactionEventProducer;
 
     @Transactional
     public TransactionResponse createTransaction(CreateTransactionRequest request) {
@@ -42,9 +44,11 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse completeTransaction(Long id) {
+        // load transaction
         var transaction = transactionRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(
                         "Transaction not found with id: " + id));
+        // validate status
         if (transaction.getStatus() == TransactionStatus.COMPLETED) {
             throw new BadRequestException(
                     "Transaction is already completed");
@@ -52,7 +56,17 @@ public class TransactionService {
             throw new BadRequestException(
                     "Transaction cannot be completed from status: "  + transaction.getStatus());
         }
+        // set status to COMPLETED
         transaction.setStatus(TransactionStatus.COMPLETED);
+        // build TransactionCompletedEvent
+        var event = new TransactionCompletedEvent();
+        event.setTransactionId(transaction.getId());
+        event.setCustomerId(transaction.getCustomer().getId());
+        event.setMerchantId(transaction.getMerchant().getId());
+        event.setTransactionReference(transaction.getTransactionReference());
+        event.setAmount(transaction.getAmount());
+        // publish to Kafka
+        transactionEventProducer.publishTransactionCompleted(event);
         return transactionMapper.toTransactionResponse(transaction);
     }
 

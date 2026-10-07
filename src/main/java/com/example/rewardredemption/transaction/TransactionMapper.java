@@ -1,7 +1,7 @@
-package com.example.rewardredemption.transcation;
+package com.example.rewardredemption.transaction;
 
-import com.example.rewardredemption.transcation.dto.CreateTransactionRequest;
-import com.example.rewardredemption.transcation.dto.TransactionResponse;
+import com.example.rewardredemption.transaction.dto.CreateTransactionRequest;
+import com.example.rewardredemption.transaction.dto.TransactionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
