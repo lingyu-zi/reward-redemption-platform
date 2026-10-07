@@ -26,10 +26,11 @@ Spring Boot backend system for managing customers, rewards accounts, reward cata
 
 ### V2 — Distributed & Event-Driven Architecture
 
-1. 🚧 Cassandra Activity History
+1. ✅ Cassandra Activity History
 2. ✅ Transaction Domain
 3. ✅ Apache Kafka
 4. ✅ Points Processing
-5. ⬜ Notification
-6. ⬜ Microservice Split
-7. ⬜ Spring Security
+5. 🚧 Redemption Event Flow
+6. ⬜ Notification
+7. ⬜ Microservice Split
+8. ⬜ Spring Security
