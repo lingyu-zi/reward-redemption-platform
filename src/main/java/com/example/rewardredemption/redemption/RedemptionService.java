@@ -5,6 +5,8 @@ import com.example.rewardredemption.cart.RedemptionCartRepository;
 import com.example.rewardredemption.exception.BadRequestException;
 import com.example.rewardredemption.exception.ResourceNotFoundException;
 import com.example.rewardredemption.redemption.dto.RedemptionResponse;
+import com.example.rewardredemption.redemption.event.RedemptionCompletedEvent;
+import com.example.rewardredemption.redemption.event.RedemptionEventProducer;
 import com.example.rewardredemption.reward.Reward;
 import com.example.rewardredemption.rewardsaccount.RewardsAccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ public class RedemptionService {
     private final RedemptionCartRepository redemptionCartRepository;
     private final RewardsAccountRepository rewardsAccountRepository;
     private final RedemptionMapper redemptionMapper;
-    private final CustomerActivityService customerActivityService;
+    private final RedemptionEventProducer redemptionEventProducer;
 
     @Transactional
     public RedemptionResponse redeem(Long cartId) {
@@ -66,12 +68,16 @@ public class RedemptionService {
         cart.clearCart();
         savedRedemption.setStatus(RedemptionStatus.COMPLETED);
         redemptionRepository.flush();
-        List<Long> rewardIds = savedRedemption.getRedemptionItems().stream().
-                map(item -> item.getReward().getId()).toList();
-        customerActivityService.recordRedemptionCompleted(
-                savedRedemption.getCustomer().getId(),
-                savedRedemption.getId(), rewardIds, savedRedemption.getTotalPoints());
-
+        var rewardIds = savedRedemption.getRedemptionItems().stream()
+                .map(item -> item.getReward().getId()).toList();
+        // Kafka
+        RedemptionCompletedEvent event = new RedemptionCompletedEvent();
+        event.setCustomerId(cart.getCustomer().getId());
+        event.setRedemptionId(savedRedemption.getId());
+        event.setPointsChange(-totalPoints);
+        event.setRemainingPointsBalance(rewardsAccount.getPointsBalance());
+        event.setRewardIds(rewardIds);
+        redemptionEventProducer.publishRedemptionCompleted(event);
         return redemptionMapper.toRedemptionResponse(savedRedemption);
     }
 
