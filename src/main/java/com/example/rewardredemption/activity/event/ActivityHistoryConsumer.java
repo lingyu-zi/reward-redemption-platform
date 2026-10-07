@@ -30,7 +30,7 @@ public class ActivityHistoryConsumer {
             topics = "redemption-completed",
             groupId = "activity-history-group"
     )
-    public void redemptionCompletedActivity(RedemptionCompletedEvent event) {
+    public void saveRedemptionActivity(RedemptionCompletedEvent event) {
         customerActivityService.recordRedemptionCompleted(
                 event.getCustomerId(),
                 event.getRedemptionId(),
