@@ -30,7 +30,8 @@ Spring Boot backend system for managing customers, rewards accounts, reward cata
 2. ✅ Transaction Domain
 3. ✅ Apache Kafka
 4. ✅ Points Processing
-5. 🚧 Redemption Event Flow
-6. ⬜ Notification
-7. ⬜ Microservice Split
-8. ⬜ Spring Security
+5. ✅ Redemption Event Flow
+6. ✅ Notification
+7. 🚧 Microservice Split
+8. ⬜ Notification Persistence & Email
+9. ⬜ Spring Security
