@@ -16,12 +16,15 @@ public class CustomerActivity {
     @Column("activity_type")
     private String activityType;
 
-    @Column("total_points_cost")
-    private Long totalPointsCost;
+    @Column("points_change")
+    private Long pointsChange;
 
     @Column("redemption_id")
     private Long redemptionId;
 
     @Column("reward_ids")
     private List<Long> rewardIds;
+
+    @Column("transaction_id")
+    private Long transactionId;
 }

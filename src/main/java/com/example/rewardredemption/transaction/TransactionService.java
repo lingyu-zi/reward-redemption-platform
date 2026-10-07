@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,6 +60,9 @@ public class TransactionService {
         }
         // set status to COMPLETED
         transaction.setStatus(TransactionStatus.COMPLETED);
+        // get points change
+        var pointsChange = transaction.getAmount().multiply(BigDecimal.valueOf(1.5))
+                .setScale(0, RoundingMode.DOWN).longValue();
         // build TransactionCompletedEvent
         var event = new TransactionCompletedEvent();
         event.setTransactionId(transaction.getId());
@@ -65,6 +70,7 @@ public class TransactionService {
         event.setMerchantId(transaction.getMerchant().getId());
         event.setTransactionReference(transaction.getTransactionReference());
         event.setAmount(transaction.getAmount());
+        event.setPointsChange(pointsChange);
         // publish to Kafka
         transactionEventProducer.publishTransactionCompleted(event);
         return transactionMapper.toTransactionResponse(transaction);

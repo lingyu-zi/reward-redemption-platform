@@ -16,4 +16,5 @@ public class TransactionCompletedEvent {
     private Long customerId;
     private Long merchantId;
     private BigDecimal amount;
+    private Long pointsChange;
 }

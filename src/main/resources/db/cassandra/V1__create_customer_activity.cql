@@ -5,7 +5,6 @@ CREATE TABLE reward_activity.customer_activity (
    activity_type text,
    reward_ids list<bigint>,
    redemption_id bigint,
-   total_points_cost bigint,
 
    PRIMARY KEY (
        (customer_id),

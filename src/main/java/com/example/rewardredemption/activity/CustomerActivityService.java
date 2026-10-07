@@ -16,16 +16,30 @@ public class CustomerActivityService {
 
     public void recordRedemptionCompleted(Long customerId,
                                           Long redemptionId, List<Long> rewardIds, Long totalPointsCost) {
-        CustomerActivityKey key = new CustomerActivityKey();
+        var key = new CustomerActivityKey();
         key.setCustomerId(customerId);
         key.setEventTime(Instant.now());
         key.setActivityId(Uuids.timeBased());
-        CustomerActivity customerActivity = new CustomerActivity();
+        var customerActivity = new CustomerActivity();
         customerActivity.setKey(key);
-        customerActivity.setActivityType(ActivityType.REDEMPTION_COMPLETED.name());
+        customerActivity.setActivityType(ActivityType.POINTS_REDEEMED.name());
         customerActivity.setRedemptionId(redemptionId);
         customerActivity.setRewardIds(rewardIds);
-        customerActivity.setTotalPointsCost(totalPointsCost);
+        // redeem - minus the points
+        customerActivity.setPointsChange(-totalPointsCost);
+        customerActivityRepository.save(customerActivity);
+    }
+
+    public void recordPointsEarned(Long customerId, Long transactionId, Long pointsEarned) {
+        var key = new CustomerActivityKey();
+        key.setCustomerId(customerId);
+        key.setEventTime(Instant.now());
+        key.setActivityId(Uuids.timeBased());
+        var customerActivity = new CustomerActivity();
+        customerActivity.setKey(key);
+        customerActivity.setActivityType(ActivityType.POINTS_EARNED.name());
+        customerActivity.setTransactionId(transactionId);
+        customerActivity.setPointsChange(pointsEarned);
         customerActivityRepository.save(customerActivity);
     }
 

@@ -9,7 +9,8 @@ import java.util.List;
 public class CustomerActivityResponse {
     private String activityType;
     private Instant eventTime;
-    private Long totalPointsCost;
+    private Long pointsChange;
     private List<Long> rewardIds;
     private Long redemptionId;
+    private Long transactionId;
 }
