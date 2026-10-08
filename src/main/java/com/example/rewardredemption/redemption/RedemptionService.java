@@ -1,13 +1,11 @@
 package com.example.rewardredemption.redemption;
 
-import com.example.rewardredemption.activity.CustomerActivityService;
 import com.example.rewardredemption.cart.RedemptionCartRepository;
 import com.example.rewardredemption.exception.BadRequestException;
 import com.example.rewardredemption.exception.ResourceNotFoundException;
 import com.example.rewardredemption.redemption.dto.RedemptionResponse;
 import com.example.rewardredemption.redemption.event.RedemptionCompletedEvent;
 import com.example.rewardredemption.redemption.event.RedemptionEventProducer;
-import com.example.rewardredemption.reward.Reward;
 import com.example.rewardredemption.rewardsaccount.RewardsAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
