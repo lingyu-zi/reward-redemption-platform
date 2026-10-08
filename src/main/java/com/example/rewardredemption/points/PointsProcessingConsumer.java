@@ -12,7 +12,6 @@ public class PointsProcessingConsumer {
 
     @KafkaListener(topics = "transaction-completed", groupId = "points-processing-group")
     public void pointProcessing(TransactionCompletedEvent event) {
-        System.out.println("KAFKA EVENT RECEIVED: " + event.getTransactionId());
         pointsProcessingService.processTransaction(event);
     }
 }

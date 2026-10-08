@@ -22,9 +22,6 @@ public class PointsProcessingService {
                 () -> new ResourceNotFoundException(
                         "Rewards account not found for customer id: " + customerId));
         var points = event.getPointsChange();
-        System.out.println("Processing points for customer: " + event.getCustomerId());
-        System.out.println("Transaction amount: " + event.getAmount());
         rewardsAccount.setPointsBalance(rewardsAccount.getPointsBalance() + points);
-
     }
 }
