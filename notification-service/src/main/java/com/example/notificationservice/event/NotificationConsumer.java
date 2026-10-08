@@ -12,7 +12,7 @@ public class NotificationConsumer {
 
     @KafkaListener(
             topics = "redemption-completed",
-            groupId = "notification-service-test-group"
+            groupId = "notification-service"
     )
     public void sendRedemptionNotification(RedemptionCompletedEvent event) {
         notificationService.sendRedemptionNotification(event);
