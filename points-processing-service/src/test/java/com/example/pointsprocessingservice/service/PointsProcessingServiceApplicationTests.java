@@ -1,4 +1,4 @@
-package com.example.pointsprocessingservice;
+package com.example.pointsprocessingservice.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

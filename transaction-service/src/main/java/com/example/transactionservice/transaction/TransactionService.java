@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public class TransactionService {
         var transaction = transactionRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(
                         "Transaction not found with id: " + id));
+
         // validate status
         if (transaction.getStatus() == TransactionStatus.COMPLETED) {
             throw new BadRequestException(
@@ -47,19 +49,25 @@ public class TransactionService {
             throw new BadRequestException(
                     "Transaction cannot be completed from status: "  + transaction.getStatus());
         }
+
         // set status to COMPLETED
         transaction.setStatus(TransactionStatus.COMPLETED);
+
         // get points change
         var pointsChange = transaction.getAmount().multiply(BigDecimal.valueOf(1.5))
                 .setScale(0, RoundingMode.DOWN).longValue();
+
         // build TransactionCompletedEvent
         var event = new TransactionCompletedEvent();
+        event.setEventId(UUID.randomUUID());
+        event.setOccurredAt(Instant.now());
         event.setTransactionId(transaction.getId());
         event.setCustomerId(transaction.getCustomerId());
         event.setMerchantId(transaction.getMerchantId());
         event.setTransactionReference(transaction.getTransactionReference());
         event.setAmount(transaction.getAmount());
         event.setPointsChange(pointsChange);
+
         // publish to Kafka
         transactionEventProducer.publishTransactionCompleted(event);
         return transactionMapper.toTransactionResponse(transaction);

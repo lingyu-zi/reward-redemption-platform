@@ -5,7 +5,6 @@ import com.example.activityhistoryservice.activity.CustomerActivityService;
 import com.example.activityhistoryservice.event.RedemptionCompletedEvent;
 import com.example.activityhistoryservice.event.TransactionCompletedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -25,6 +24,8 @@ public class ActivityHistoryConsumer {
         var event = objectMapper.readValue(
                 message, TransactionCompletedEvent.class);
         customerActivityService.recordPointsEarned(
+                event.getEventId(),
+                event.getOccurredAt(),
                 event.getCustomerId(),
                 event.getTransactionId(),
                 event.getPointsChange());
@@ -40,6 +41,8 @@ public class ActivityHistoryConsumer {
         var event = objectMapper.readValue(
                 message, RedemptionCompletedEvent.class);
         customerActivityService.recordRedemptionCompleted(
+                event.getEventId(),
+                event.getOccurredAt(),
                 event.getCustomerId(),
                 event.getRedemptionId(),
                 event.getRewardIds(),

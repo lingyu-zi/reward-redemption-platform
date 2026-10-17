@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -104,6 +106,8 @@ public class RedemptionService {
 
         // Kafka
         RedemptionCompletedEvent event = new RedemptionCompletedEvent();
+        event.setEventId(UUID.randomUUID());
+        event.setOccurredAt(Instant.now());
         event.setCustomerId(cart.getCustomerId());
         event.setRedemptionId(savedRedemption.getId());
         event.setPointsChange(-totalPoints);

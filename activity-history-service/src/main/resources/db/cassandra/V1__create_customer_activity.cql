@@ -1,22 +1,22 @@
 CREATE TABLE IF NOT EXISTS reward_activity.customer_activity (
-     customer_id bigint,
-     event_time timestamp,
-     activity_id timeuuid,
+    customer_id bigint,
+    event_time timestamp,
+    activity_id uuid,
 
-     activity_type text,
-     points_change bigint,
+    activity_type text,
+    points_change bigint,
 
-     transaction_id bigint,
-     redemption_id bigint,
-     reward_ids list<bigint>,
+    transaction_id bigint,
+    redemption_id bigint,
+    reward_ids list<bigint>,
 
-     PRIMARY KEY (
-         (customer_id),
-          event_time,
-          activity_id
-         )
-    )
-    WITH CLUSTERING ORDER BY (
-        event_time DESC,
-        activity_id DESC
+    PRIMARY KEY (
+     (customer_id),
+      event_time,
+      activity_id
+     )
+)
+WITH CLUSTERING ORDER BY (
+    event_time DESC,
+    activity_id DESC
 );
