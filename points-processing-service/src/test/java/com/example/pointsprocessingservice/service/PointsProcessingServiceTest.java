@@ -1,4 +1,4 @@
-package com.example.pointsprocessingservice;
+package com.example.pointsprocessingservice.service;
 
 import com.example.pointsprocessingservice.account.RewardsAccount;
 import com.example.pointsprocessingservice.account.RewardsAccountRepository;
@@ -6,7 +6,6 @@ import com.example.pointsprocessingservice.event.TransactionCompletedEvent;
 import com.example.pointsprocessingservice.exception.ResourceNotFoundException;
 import com.example.pointsprocessingservice.idempotency.ProcessedEvent;
 import com.example.pointsprocessingservice.idempotency.ProcessedEventRepository;
-import com.example.pointsprocessingservice.service.PointsProcessingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

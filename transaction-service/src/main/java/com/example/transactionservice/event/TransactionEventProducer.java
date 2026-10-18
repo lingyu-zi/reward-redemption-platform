@@ -10,6 +10,7 @@ public class TransactionEventProducer {
     private final KafkaTemplate<String, TransactionCompletedEvent> kafkaTemplate;
 
     public void publishTransactionCompleted(TransactionCompletedEvent event){
-        kafkaTemplate.send("transaction-completed", event.getCustomerId().toString(), event);
+        kafkaTemplate.send("transaction-completed",
+                event.getCustomerId().toString(), event).join();
     }
 }

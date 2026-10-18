@@ -21,3 +21,6 @@ jobs:
 
       - name: Test points processing service
         run: mvn -B -f points-processing-service/pom.xml -Dtest=PointsProcessingServiceTest test
+
+      - name: Test transaction outbox
+        run: mvn -B -f transaction-service/pom.xml -Dtest=OutboxPublisherTest test

@@ -6,9 +6,12 @@ import com.example.transactionservice.event.TransactionCompletedEvent;
 import com.example.transactionservice.event.TransactionEventProducer;
 import com.example.transactionservice.exception.BadRequestException;
 import com.example.transactionservice.exception.ResourceNotFoundException;
+import com.example.transactionservice.outbox.OutboxEvent;
+import com.example.transactionservice.outbox.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,8 +23,10 @@ import java.util.UUID;
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final TransactionMapper transactionMapper;
     private final TransactionEventProducer transactionEventProducer;
+    private final OutboxEventRepository outboxEventRepository;
+    private final TransactionMapper transactionMapper;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public TransactionResponse createTransaction(CreateTransactionRequest request) {
@@ -68,8 +73,16 @@ public class TransactionService {
         event.setAmount(transaction.getAmount());
         event.setPointsChange(pointsChange);
 
-        // publish to Kafka
-        transactionEventProducer.publishTransactionCompleted(event);
+        // convert event to JSON
+        var payload = objectMapper.writeValueAsString(event);
+
+        // save to outbox
+        var outboxEvent = new OutboxEvent();
+        outboxEvent.setEventId(event.getEventId());
+        outboxEvent.setEventType("TRANSACTION_COMPLETED");
+        outboxEvent.setPayload(payload);
+        outboxEventRepository.save(outboxEvent);
+
         return transactionMapper.toTransactionResponse(transaction);
     }
 
