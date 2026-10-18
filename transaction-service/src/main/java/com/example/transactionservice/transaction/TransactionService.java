@@ -3,7 +3,6 @@ package com.example.transactionservice.transaction;
 import com.example.transactionservice.dto.CreateTransactionRequest;
 import com.example.transactionservice.dto.TransactionResponse;
 import com.example.transactionservice.event.TransactionCompletedEvent;
-import com.example.transactionservice.event.TransactionEventProducer;
 import com.example.transactionservice.exception.BadRequestException;
 import com.example.transactionservice.exception.ResourceNotFoundException;
 import com.example.transactionservice.outbox.OutboxEvent;
@@ -23,7 +22,6 @@ import java.util.UUID;
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final TransactionEventProducer transactionEventProducer;
     private final OutboxEventRepository outboxEventRepository;
     private final TransactionMapper transactionMapper;
     private final ObjectMapper objectMapper;
