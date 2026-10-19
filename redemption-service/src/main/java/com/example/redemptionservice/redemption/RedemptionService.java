@@ -4,15 +4,17 @@ import com.example.redemptionservice.account.RewardsAccountRepository;
 import com.example.redemptionservice.cart.RedemptionCartItem;
 import com.example.redemptionservice.cart.RedemptionCartRepository;
 import com.example.redemptionservice.event.RedemptionCompletedEvent;
-import com.example.redemptionservice.event.RedemptionEventProducer;
 import com.example.redemptionservice.exception.BadRequestException;
 import com.example.redemptionservice.exception.ResourceNotFoundException;
+import com.example.redemptionservice.outbox.RedemptionOutboxEvent;
+import com.example.redemptionservice.outbox.RedemptionOutboxEventRepository;
 import com.example.redemptionservice.redemption.dto.RedemptionResponse;
 import com.example.redemptionservice.reward.Reward;
 import com.example.redemptionservice.reward.RewardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,8 +28,9 @@ public class RedemptionService {
     private final RedemptionCartRepository redemptionCartRepository;
     private final RewardsAccountRepository rewardsAccountRepository;
     private final RewardRepository rewardRepository;
+    private final RedemptionOutboxEventRepository redemptionOutboxEventRepository;
     private final RedemptionMapper redemptionMapper;
-    private final RedemptionEventProducer redemptionEventProducer;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public RedemptionResponse redeem(Long cartId) {
@@ -102,7 +105,6 @@ public class RedemptionService {
         // clear cart
         cart.clearCart();
         savedRedemption.setStatus(RedemptionStatus.COMPLETED);
-        redemptionRepository.flush();
 
         // Kafka
         RedemptionCompletedEvent event = new RedemptionCompletedEvent();
@@ -113,7 +115,16 @@ public class RedemptionService {
         event.setPointsChange(-totalPoints);
         event.setRemainingPointsBalance(rewardsAccount.getPointsBalance());
         event.setRewardIds(rewardIds);
-        redemptionEventProducer.publishRedemptionCompleted(event);
+
+        // Outbox
+        var payload = objectMapper.writeValueAsString(event);
+
+        var outboxEvent = new RedemptionOutboxEvent();
+        outboxEvent.setEventId(event.getEventId());
+        outboxEvent.setEventType("REDEMPTION_COMPLETED");
+        outboxEvent.setPayload(payload);
+
+        redemptionOutboxEventRepository.save(outboxEvent);
 
         return buildRedemptionResponse(savedRedemption);
     }

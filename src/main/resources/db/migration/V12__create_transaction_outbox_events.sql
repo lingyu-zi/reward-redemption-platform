@@ -1,4 +1,4 @@
-CREATE TABLE outbox_events (
+CREATE TABLE transaction_outbox_events (
    id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
    event_id BINARY(16) NOT NULL,

@@ -1,42 +1,39 @@
 package com.example.redemptionservice.outbox;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "redemption_outbox_events", schema = "reward_redemption")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "redemption_outbox_events")
 public class RedemptionOutboxEvent {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-@jakarta.validation.constraints.Size(max = 16)
-@jakarta.validation.constraints.NotNull
-@jakarta.persistence.Column(name = "event_id", nullable = false, length = 16)
-private java.lang.String eventId;
+    @Column(name = "event_id", nullable = false, unique = true)
+    private UUID eventId;
 
-@jakarta.validation.constraints.Size(max = 100)
-@jakarta.validation.constraints.NotNull
-@jakarta.persistence.Column(name = "event_type", nullable = false, length = 100)
-private java.lang.String eventType;
+    @Column(name = "event_type", nullable = false, length = 100)
+    private String eventType;
 
-@jakarta.validation.constraints.NotNull
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "payload", nullable = false)
-private java.lang.String payload;
+    @Column(name = "payload", nullable = false, columnDefinition = "TEXT")
+    private String payload;
 
-@jakarta.validation.constraints.NotNull
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "published", nullable = false)
-private java.lang.Boolean published;
+    @Column(name = "published", nullable = false)
+    private boolean published = false;
 
-@jakarta.validation.constraints.NotNull
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP(6)")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
-@jakarta.persistence.Column(name = "published_at")
-private java.time.Instant publishedAt;
-
-
-
+    @Column(name = "published_at")
+    private Instant publishedAt;
 }
