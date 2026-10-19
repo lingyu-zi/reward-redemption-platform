@@ -24,3 +24,6 @@ jobs:
 
       - name: Test transaction outbox
         run: mvn -B -f transaction-service/pom.xml -Dtest=TransactionServiceTest,OutboxPublisherTest test
+
+      - name: Test redemption outbox
+        run: mvn -B -f redemption-service/pom.xml -Dtest=RedemptionOutboxPublisherTest test
