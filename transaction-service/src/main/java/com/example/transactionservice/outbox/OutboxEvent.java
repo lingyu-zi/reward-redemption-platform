@@ -8,10 +8,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
-@Table(name = "outbox_events")
 @Getter
 @Setter
+@Entity
+@Table(name = "transaction_outbox_events")
 public class OutboxEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +20,10 @@ public class OutboxEvent {
     @Column(name = "event_id", nullable = false, unique = true)
     private UUID eventId;
 
-    @Column(name = "event_type", nullable = false)
+    @Column(name = "event_type", nullable = false, length = 100)
     private String eventType;
 
-    @Column(name = "payload", nullable = false)
+    @Column(name = "payload", nullable = false, columnDefinition = "TEXT")
     private String payload;
 
     @Column(name = "published", nullable = false)
@@ -36,3 +36,5 @@ public class OutboxEvent {
     @Column(name = "published_at")
     private Instant publishedAt;
 }
+
+

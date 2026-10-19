@@ -3,12 +3,14 @@ package com.example.transactionservice.outbox;
 import com.example.transactionservice.event.TransactionCompletedEvent;
 import com.example.transactionservice.event.TransactionEventProducer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class OutboxPublisher {
@@ -39,8 +41,11 @@ public class OutboxPublisher {
                 outboxEventRepository.save(outboxEvent);
 
             } catch (Exception e) {
-                // keep published = false
-                // publisher will retry later
+                log.error(
+                        "Failed to publish transaction outbox event {}",
+                        outboxEvent.getEventId(),
+                        e
+                );
             }
         }
     }

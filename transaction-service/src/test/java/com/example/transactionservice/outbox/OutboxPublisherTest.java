@@ -29,26 +29,8 @@ class OutboxPublisherTest {
     @InjectMocks
     private OutboxPublisher outboxPublisher;
 
-    private OutboxEvent createOutboxEvent() {
-        var outboxEvent = new OutboxEvent();
-        outboxEvent.setId(1L);
-        outboxEvent.setEventId(UUID.randomUUID());
-        outboxEvent.setEventType("TRANSACTION_COMPLETED");
-        outboxEvent.setPayload("{\"test\":\"payload\"}");
-        outboxEvent.setPublished(false);
-
-        return outboxEvent;
-    }
-
-    private TransactionCompletedEvent createTransactionEvent(OutboxEvent outboxEvent) {
-        var transactionEvent = new TransactionCompletedEvent();
-        transactionEvent.setEventId(outboxEvent.getEventId());
-        transactionEvent.setCustomerId(1L);
-
-        return transactionEvent;
-    }
-
     // Happy path
+
     @Test
     void shouldPublishPendingEventAndMarkAsPublished() {
         var outboxEvent = createOutboxEvent();
@@ -63,6 +45,8 @@ class OutboxPublisherTest {
                 TransactionCompletedEvent.class))
                 .thenReturn(transactionEvent);
 
+        assertFalse(outboxEvent.isPublished());
+
         outboxPublisher.publishPendingEvents();
 
         assertTrue(outboxEvent.isPublished());
@@ -71,8 +55,8 @@ class OutboxPublisherTest {
         verify(transactionEventProducer).publishTransactionCompleted(transactionEvent);
         verify(outboxEventRepository).save(outboxEvent);
     }
-
     // Kafka failure
+
     @Test
     void shouldKeepEventUnpublishedWhenPublishFails(){
 
@@ -103,12 +87,13 @@ class OutboxPublisherTest {
         verify(outboxEventRepository, never())
                 .save(outboxEvent);
     }
-
     // empty queue path
+
     @Test
     void shouldDoNothingWhenNoPendingEvents(){
 
-        when(outboxEventRepository.findByPublishedFalseOrderByCreatedAtAsc())
+        when(outboxEventRepository
+                .findByPublishedFalseOrderByCreatedAtAsc())
                 .thenReturn(List.of());
 
         outboxPublisher.publishPendingEvents();
@@ -118,5 +103,24 @@ class OutboxPublisherTest {
 
         verify(outboxEventRepository, never())
                 .save(any());
+    }
+
+    private OutboxEvent createOutboxEvent() {
+        var outboxEvent = new OutboxEvent();
+        outboxEvent.setId(1L);
+        outboxEvent.setEventId(UUID.randomUUID());
+        outboxEvent.setEventType("TRANSACTION_COMPLETED");
+        outboxEvent.setPayload("{\"test\":\"payload\"}");
+        outboxEvent.setPublished(false);
+
+        return outboxEvent;
+    }
+
+    private TransactionCompletedEvent createTransactionEvent(OutboxEvent outboxEvent) {
+        var transactionEvent = new TransactionCompletedEvent();
+        transactionEvent.setEventId(outboxEvent.getEventId());
+        transactionEvent.setCustomerId(1L);
+
+        return transactionEvent;
     }
 }
