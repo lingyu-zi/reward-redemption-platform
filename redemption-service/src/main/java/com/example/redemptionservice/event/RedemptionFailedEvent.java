@@ -1,4 +1,4 @@
-package com.example.redemptionservice.compensation;
+package com.example.redemptionservice.event;
 
 import lombok.Getter;
 import lombok.Setter;

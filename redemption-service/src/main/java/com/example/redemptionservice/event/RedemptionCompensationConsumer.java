@@ -1,8 +1,6 @@
 package com.example.redemptionservice.event;
 
-import com.example.redemptionservice.compensation.RedemptionCompensation;
 import com.example.redemptionservice.compensation.RedemptionCompensationService;
-import com.example.redemptionservice.compensation.RedemptionFailedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
