@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class FulfillmentConsumer {
+public class RedemptionRequestedConsumer {
     private final FulfillmentService fulfillmentService;
 
     @KafkaListener(
-            topics = "redemption-completed",
+            topics = "redemption-requested",
             groupId = "fulfillment-service"
     )
-    public void consume(RedemptionCompletedEvent event) {
+    public void consume(RedemptionRequestedEvent event) {
         fulfillmentService.fulfill(event);
     }
 }

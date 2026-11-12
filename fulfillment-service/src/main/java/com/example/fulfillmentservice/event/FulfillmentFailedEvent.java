@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-public class RedemptionFailedEvent {
+public class FulfillmentFailedEvent {
     UUID eventId;
     Instant occurredAt;
     Long redemptionId;

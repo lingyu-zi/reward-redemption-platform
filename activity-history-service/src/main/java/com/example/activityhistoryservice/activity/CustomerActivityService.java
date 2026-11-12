@@ -14,9 +14,12 @@ public class CustomerActivityService {
     private final CustomerActivityRepository customerActivityRepository;
     private final CustomerActivityMapper customerActivityMapper;
 
-    public void recordRedemptionCompleted(UUID eventId, Instant occurredAt,
-                                          Long customerId, Long redemptionId,
-                                          List<Long> rewardIds, Long pointsChange) {
+    public void recordRedemptionCompleted(UUID eventId,
+                                          Instant occurredAt,
+                                          Long customerId,
+                                          Long redemptionId,
+                                          List<Long> rewardIds,
+                                          Long pointsChange) {
         var key = new CustomerActivityKey();
         key.setCustomerId(customerId);
         key.setEventTime(occurredAt);
@@ -24,10 +27,33 @@ public class CustomerActivityService {
 
         var customerActivity = new CustomerActivity();
         customerActivity.setKey(key);
-        customerActivity.setActivityType(ActivityType.POINTS_REDEEMED.name());
+        customerActivity.setActivityType(
+                ActivityType.POINTS_REDEEMED.name()
+        );
         customerActivity.setRedemptionId(redemptionId);
         customerActivity.setRewardIds(rewardIds);
         customerActivity.setPointsChange(pointsChange);
+        customerActivityRepository.save(customerActivity);
+    }
+
+    public void recordRedemptionCompensated(UUID eventId,
+                                            Instant occurredAt,
+                                            Long customerId,
+                                            Long redemptionId,
+                                            Long pointsReturned) {
+        var key = new CustomerActivityKey();
+        key.setCustomerId(customerId);
+        key.setEventTime(occurredAt);
+        key.setActivityId(eventId);
+
+        var customerActivity = new CustomerActivity();
+        customerActivity.setKey(key);
+        customerActivity.setActivityType(
+                ActivityType.POINTS_RESTORED.name()
+        );
+        customerActivity.setRedemptionId(redemptionId);
+        customerActivity.setPointsChange(pointsReturned);
+
         customerActivityRepository.save(customerActivity);
     }
 
@@ -52,4 +78,5 @@ public class CustomerActivityService {
                 .map(customerActivityMapper::toCustomerActivityResponse)
                 .toList();
     }
+
 }

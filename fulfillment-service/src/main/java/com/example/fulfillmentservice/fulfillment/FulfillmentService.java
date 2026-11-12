@@ -1,8 +1,6 @@
 package com.example.fulfillmentservice.fulfillment;
 
-import com.example.fulfillmentservice.event.RedemptionCompletedEvent;
-import com.example.fulfillmentservice.event.RedemptionFailedEvent;
-import com.example.fulfillmentservice.event.RedemptionFailureProducer;
+import com.example.fulfillmentservice.event.*;
 import com.example.fulfillmentservice.merchant.MerchantProviderClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,10 +14,11 @@ import java.util.UUID;
 public class FulfillmentService {
     private final FulfillmentRecordRepository fulfillmentRecordRepository;
     private final MerchantProviderClient merchantProviderClient;
-    private final RedemptionFailureProducer redemptionFailureProducer;
+    private final FulfillmentFailedProducer fulfillmentFailedProducer;
+    private final FulfillmentSucceededProducer fulfillmentSucceededProducer;
 
     @Transactional
-    public void fulfill(RedemptionCompletedEvent event){
+    public void fulfill(RedemptionRequestedEvent event){
         var fulfillmentRecord = fulfillmentRecordRepository.findByRedemptionId(
                 event.getRedemptionId()).orElseGet(() -> createFulfillmentRecord(event));
 
@@ -33,15 +32,15 @@ public class FulfillmentService {
         try {
             merchantProviderClient.fulfill(event);
 
-            fulfillmentRecord.setStatus(FulfillmentStatus.SUCCESS);
-            fulfillmentRecord.setFailureReason(null);
         } catch (Exception e) {
             fulfillmentRecord.setStatus(FulfillmentStatus.FAILED);
             var reason = e.getMessage() != null ?
                     e.getMessage() : "Merchant fulfillment failed";
             fulfillmentRecord.setFailureReason(reason);
 
-            var failedEvent = new RedemptionFailedEvent();
+            fulfillmentRecordRepository.save(fulfillmentRecord);
+
+            var failedEvent = new FulfillmentFailedEvent();
             failedEvent.setEventId(UUID.randomUUID());
             failedEvent.setOccurredAt(Instant.now());
             failedEvent.setCustomerId(event.getCustomerId());
@@ -49,13 +48,30 @@ public class FulfillmentService {
             failedEvent.setPointsToReturn(-event.getPointsChange());
             failedEvent.setReason(reason);
 
-            redemptionFailureProducer.publish(failedEvent);
+            fulfillmentFailedProducer.publishFulfillmentFailed(failedEvent);
+
+            return;
         }
+
+        fulfillmentRecord.setStatus(FulfillmentStatus.SUCCESS);
+        fulfillmentRecord.setFailureReason(null);
+
         fulfillmentRecordRepository.save(fulfillmentRecord);
+
+        var succeededEvent = new FulfillmentSucceededEvent();
+        succeededEvent.setEventId(UUID.randomUUID());
+        succeededEvent.setRedemptionId(event.getRedemptionId());
+        succeededEvent.setCustomerId(event.getCustomerId());
+        succeededEvent.setRewardIds(event.getRewardIds());
+        succeededEvent.setPointsChange(event.getPointsChange());
+        succeededEvent.setRemainingPointsBalance(event.getRemainingPointsBalance());
+        succeededEvent.setOccurredAt(Instant.now());
+
+        fulfillmentSucceededProducer.publishFulfillmentSucceeded(succeededEvent);
     }
 
     private FulfillmentRecord createFulfillmentRecord(
-            RedemptionCompletedEvent event){
+            RedemptionRequestedEvent event){
         var record = new FulfillmentRecord();
 
         record.setRedemptionId(event.getRedemptionId());

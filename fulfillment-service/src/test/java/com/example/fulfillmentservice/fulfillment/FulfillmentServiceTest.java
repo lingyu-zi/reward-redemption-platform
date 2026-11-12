@@ -1,8 +1,8 @@
 package com.example.fulfillmentservice.fulfillment;
 
-import com.example.fulfillmentservice.event.RedemptionCompletedEvent;
-import com.example.fulfillmentservice.event.RedemptionFailedEvent;
-import com.example.fulfillmentservice.event.RedemptionFailureProducer;
+import com.example.fulfillmentservice.event.RedemptionRequestedEvent;
+import com.example.fulfillmentservice.event.FulfillmentFailedEvent;
+import com.example.fulfillmentservice.event.FulfillmentFailedProducer;
 import com.example.fulfillmentservice.merchant.MerchantProviderClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ class FulfillmentServiceTest {
     private MerchantProviderClient merchantProviderClient;
 
     @Mock
-    private RedemptionFailureProducer redemptionFailureProducer;
+    private FulfillmentFailedProducer fulfillmentFailedProducer;
 
     @InjectMocks
     private FulfillmentService fulfillmentService;
@@ -51,7 +51,7 @@ class FulfillmentServiceTest {
                 .findByRedemptionId(event.getRedemptionId());
         verify(merchantProviderClient).fulfill(event);
         verify(fulfillmentRecordRepository).save(fulfillmentRecord);
-        verify(redemptionFailureProducer, never()).publish(any());
+        verify(fulfillmentFailedProducer, never()).publishFulfillmentFailed(any());
     }
 
     @Test
@@ -74,12 +74,12 @@ class FulfillmentServiceTest {
         assertEquals("Merchant provider unavailable",
                 fulfillmentRecord.getFailureReason());
 
-        var captor = ArgumentCaptor.forClass(RedemptionFailedEvent.class);
+        var captor = ArgumentCaptor.forClass(FulfillmentFailedEvent.class);
 
         verify(fulfillmentRecordRepository)
                 .findByRedemptionId(event.getRedemptionId());
         verify(fulfillmentRecordRepository).save(fulfillmentRecord);
-        verify(redemptionFailureProducer).publish(captor.capture());
+        verify(fulfillmentFailedProducer).publishFulfillmentFailed(captor.capture());
         verify(merchantProviderClient).fulfill(event);
 
         var failedEvent = captor.getValue();
@@ -118,7 +118,7 @@ class FulfillmentServiceTest {
         assertNull(savedRecord.getFailureReason());
 
         verify(merchantProviderClient).fulfill(event);
-        verify(redemptionFailureProducer, never()).publish(any());
+        verify(fulfillmentFailedProducer, never()).publishFulfillmentFailed(any());
     }
 
     @Test
@@ -143,11 +143,11 @@ class FulfillmentServiceTest {
         verify(fulfillmentRecordRepository, never())
                 .save(any(FulfillmentRecord.class));
 
-        verify(redemptionFailureProducer, never()).publish(any());
+        verify(fulfillmentFailedProducer, never()).publishFulfillmentFailed(any());
         verify(merchantProviderClient, never()).fulfill(any());
     }
 
-    private FulfillmentRecord createPendingFulfillmentRecord(RedemptionCompletedEvent event) {
+    private FulfillmentRecord createPendingFulfillmentRecord(RedemptionRequestedEvent event) {
         var fulfillmentRecord = new FulfillmentRecord();
         fulfillmentRecord.setRedemptionId(event.getRedemptionId());
         fulfillmentRecord.setCustomerId(event.getCustomerId());
@@ -156,8 +156,8 @@ class FulfillmentServiceTest {
         return fulfillmentRecord;
     }
 
-    private RedemptionCompletedEvent createEvent() {
-        var event = new RedemptionCompletedEvent();
+    private RedemptionRequestedEvent createEvent() {
+        var event = new RedemptionRequestedEvent();
         event.setCustomerId(1L);
         event.setRedemptionId(1L);
         event.setPointsChange(-100L);

@@ -9,10 +9,10 @@ import java.util.UUID;
 @Data
 public class RedemptionCompletedEvent {
     private UUID eventId;
+    private Instant occurredAt;
     private Long redemptionId;
     private Long customerId;
-    private List<Long> rewardIds;
     private Long pointsChange;
     private Long remainingPointsBalance;
-    private Instant occurredAt;
+    private List<Long> rewardIds;
 }

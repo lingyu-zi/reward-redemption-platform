@@ -1,5 +1,7 @@
-package com.example.notificationservice.event;
+package com.example.notificationservice.notification;
 
+import com.example.notificationservice.event.RedemptionCompensatedEvent;
+import com.example.notificationservice.event.RedemptionCompletedEvent;
 import com.example.notificationservice.idempotency.ProcessedNotificationEvent;
 import com.example.notificationservice.idempotency.ProcessedNotificationEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ public class NotificationService {
     private final ProcessedNotificationEventRepository processedNotificationEventRepository;
 
     @Transactional
-    public void sendRedemptionNotification(RedemptionCompletedEvent event) {
+    public void sendCompletionNotification(RedemptionCompletedEvent event) {
         if (processedNotificationEventRepository.existsByEventId(event.getEventId())){
             return ;
         }
@@ -26,6 +28,25 @@ public class NotificationService {
                 event.getCustomerId(),
                 event.getRewardIds(),
                 pointsUsed,
+                event.getRemainingPointsBalance()
+        );
+
+        var processedEvent = new ProcessedNotificationEvent();
+        processedEvent.setEventId(event.getEventId());
+
+        processedNotificationEventRepository.save(processedEvent);
+    }
+
+    public void sendCompensationNotification(RedemptionCompensatedEvent event) {
+        if (processedNotificationEventRepository.existsByEventId(event.getEventId())){
+            return ;
+        }
+
+        log.info(
+                "Customer {} had {} points restored for redemption {}. Remaining balance: {}",
+                event.getCustomerId(),
+                event.getPointsReturned(),
+                event.getRedemptionId(),
                 event.getRemainingPointsBalance()
         );
 

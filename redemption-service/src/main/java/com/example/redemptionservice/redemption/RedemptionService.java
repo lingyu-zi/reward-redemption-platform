@@ -3,7 +3,9 @@ package com.example.redemptionservice.redemption;
 import com.example.redemptionservice.account.RewardsAccountRepository;
 import com.example.redemptionservice.cart.RedemptionCartItem;
 import com.example.redemptionservice.cart.RedemptionCartRepository;
+import com.example.redemptionservice.event.FulfillmentSucceededEvent;
 import com.example.redemptionservice.event.RedemptionCompletedEvent;
+import com.example.redemptionservice.event.RedemptionRequestedEvent;
 import com.example.redemptionservice.exception.BadRequestException;
 import com.example.redemptionservice.exception.ResourceNotFoundException;
 import com.example.redemptionservice.outbox.RedemptionOutboxEvent;
@@ -81,6 +83,7 @@ public class RedemptionService {
             throw new BadRequestException(
                     "Insufficient points to complete redemption");
         }
+
         Redemption redemption = new Redemption();
         redemption.setCustomerId(cart.getCustomerId());
         redemption.setTotalPoints(totalPoints);
@@ -104,10 +107,9 @@ public class RedemptionService {
 
         // clear cart
         cart.clearCart();
-        savedRedemption.setStatus(RedemptionStatus.COMPLETED);
 
         // Kafka
-        RedemptionCompletedEvent event = new RedemptionCompletedEvent();
+        RedemptionRequestedEvent event = new RedemptionRequestedEvent();
         event.setEventId(UUID.randomUUID());
         event.setOccurredAt(Instant.now());
         event.setCustomerId(cart.getCustomerId());
@@ -121,7 +123,7 @@ public class RedemptionService {
 
         var outboxEvent = new RedemptionOutboxEvent();
         outboxEvent.setEventId(event.getEventId());
-        outboxEvent.setEventType("REDEMPTION_COMPLETED");
+        outboxEvent.setEventType("REDEMPTION_REQUESTED");
         outboxEvent.setPayload(payload);
 
         redemptionOutboxEventRepository.save(outboxEvent);
@@ -165,5 +167,53 @@ public class RedemptionService {
 
         response.setItems(items);
         return response;
+    }
+
+    @Transactional
+    public void completeRedemption(FulfillmentSucceededEvent event) {
+        var redemption = redemptionRepository.findById(event.getRedemptionId()).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Redemption not found with id: " + event.getRedemptionId()
+                )
+        );
+
+        if (redemption.getStatus() == RedemptionStatus.COMPLETED) {
+            return;
+        }
+
+        if (redemption.getStatus() != RedemptionStatus.PENDING) {
+            throw new BadRequestException(
+                    "Cannot complete redemption with status: "
+                            + redemption.getStatus()
+            );
+        }
+
+        redemption.setStatus(RedemptionStatus.COMPLETED);
+
+        // create redemption completion event
+        var completedEvent = new RedemptionCompletedEvent();
+
+        completedEvent.setEventId(UUID.randomUUID());
+        completedEvent.setOccurredAt(Instant.now());
+
+        completedEvent.setRedemptionId(event.getRedemptionId());
+        completedEvent.setCustomerId(event.getCustomerId());
+        completedEvent.setRewardIds(event.getRewardIds());
+
+        completedEvent.setPointsChange(event.getPointsChange());
+        completedEvent.setRemainingPointsBalance(
+                event.getRemainingPointsBalance()
+        );
+
+        // save it to the outbox
+        var payload = objectMapper.writeValueAsString(completedEvent);
+
+        var outboxEvent = new RedemptionOutboxEvent();
+
+        outboxEvent.setEventId(completedEvent.getEventId());
+        outboxEvent.setEventType("REDEMPTION_COMPLETED");
+        outboxEvent.setPayload(payload);
+
+        redemptionOutboxEventRepository.save(outboxEvent);
     }
 }

@@ -1,9 +1,7 @@
-package com.example.activityhistoryservice.consumer;
+package com.example.activityhistoryservice.event;
 
 
 import com.example.activityhistoryservice.activity.CustomerActivityService;
-import com.example.activityhistoryservice.event.RedemptionCompletedEvent;
-import com.example.activityhistoryservice.event.TransactionCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -23,6 +21,7 @@ public class ActivityHistoryConsumer {
     public void saveTransactionActivity(String message) {
         var event = objectMapper.readValue(
                 message, TransactionCompletedEvent.class);
+
         customerActivityService.recordPointsEarned(
                 event.getEventId(),
                 event.getOccurredAt(),
@@ -40,6 +39,7 @@ public class ActivityHistoryConsumer {
     public void saveRedemptionActivity(String message) {
         var event = objectMapper.readValue(
                 message, RedemptionCompletedEvent.class);
+
         customerActivityService.recordRedemptionCompleted(
                 event.getEventId(),
                 event.getOccurredAt(),
@@ -47,6 +47,24 @@ public class ActivityHistoryConsumer {
                 event.getRedemptionId(),
                 event.getRewardIds(),
                 event.getPointsChange()
+        );
+    }
+
+    // Redemption compensated
+    @KafkaListener(
+            topics = "redemption-compensated",
+            groupId = "activity-history-service"
+    )
+    public void saveRedemptionCompensated(String message) {
+        var event = objectMapper.readValue(
+                message, RedemptionCompensatedEvent.class);
+
+        customerActivityService.recordRedemptionCompensated(
+                event.getEventId(),
+                event.getOccurredAt(),
+                event.getCustomerId(),
+                event.getRedemptionId(),
+                event.getPointsReturned()
         );
     }
 }

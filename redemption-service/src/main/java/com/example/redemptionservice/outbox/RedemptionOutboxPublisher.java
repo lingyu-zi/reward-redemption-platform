@@ -1,7 +1,6 @@
 package com.example.redemptionservice.outbox;
 
-import com.example.redemptionservice.event.RedemptionCompletedEvent;
-import com.example.redemptionservice.event.RedemptionEventProducer;
+import com.example.redemptionservice.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +15,9 @@ import java.time.Instant;
 public class RedemptionOutboxPublisher {
     private final RedemptionOutboxEventRepository redemptionOutboxEventRepository;
     private final ObjectMapper objectMapper;
-    private final RedemptionEventProducer redemptionEventProducer;
+    private final RedemptionRequestedProducer redemptionRequestedProducer;
+    private final RedemptionCompletedProducer redemptionCompletedProducer;
+    private final RedemptionCompensatedProducer redemptionCompensatedProducer;
 
     @Scheduled(fixedDelay = 5000)
     public void publishPendingEvents(){
@@ -25,12 +26,42 @@ public class RedemptionOutboxPublisher {
 
         for (var outboxEvent : events) {
             try {
-                var event = objectMapper.readValue(
-                        outboxEvent.getPayload(),
-                        RedemptionCompletedEvent.class
-                );
+                switch (outboxEvent.getEventType()) {
+                    case "REDEMPTION_REQUESTED" -> {
+                        var event = objectMapper.readValue(
+                                outboxEvent.getPayload(),
+                                RedemptionRequestedEvent.class
+                        );
 
-                redemptionEventProducer.publishRedemptionCompleted(event);
+                        redemptionRequestedProducer
+                                .publishRedemptionRequested(event);
+                    }
+
+                    case "REDEMPTION_COMPLETED" -> {
+                        var event = objectMapper.readValue(
+                                outboxEvent.getPayload(),
+                                RedemptionCompletedEvent.class
+                        );
+
+                        redemptionCompletedProducer
+                                .publishRedemptionCompleted(event);
+                    }
+
+                    case "REDEMPTION_COMPENSATED" -> {
+                        var event = objectMapper.readValue(
+                                outboxEvent.getPayload(),
+                                RedemptionCompensatedEvent.class
+                        );
+
+                        redemptionCompensatedProducer
+                                .publishRedemptionCompensated(event);
+                    }
+
+                    default -> throw new IllegalStateException(
+                            "Unknown redemption outbox event type: "
+                                    + outboxEvent.getEventType()
+                    );
+                }
 
                 outboxEvent.setPublished(true);
                 outboxEvent.setPublishedAt(Instant.now());
@@ -45,6 +76,5 @@ public class RedemptionOutboxPublisher {
                 );
             }
         }
-
     }
 }

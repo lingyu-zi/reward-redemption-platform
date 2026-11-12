@@ -6,11 +6,12 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class RedemptionEventProducer {
-    private final KafkaTemplate<String, RedemptionCompletedEvent> kafkaTemplate;
+public class RedemptionCompletedProducer {
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void publishRedemptionCompleted(RedemptionCompletedEvent event){
         kafkaTemplate.send("redemption-completed",
-                event.getCustomerId().toString(), event).join();
+                event.getRedemptionId().toString(),
+                event).join();
     }
 }

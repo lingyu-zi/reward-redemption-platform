@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class RedemptionFailedEvent {
+public class FulfillmentFailedEvent {
     private UUID eventId;
     private Instant occurredAt;
     private Long redemptionId;

@@ -1,7 +1,7 @@
 package com.example.redemptionservice.outbox;
 
-import com.example.redemptionservice.event.RedemptionCompletedEvent;
-import com.example.redemptionservice.event.RedemptionEventProducer;
+import com.example.redemptionservice.event.RedemptionRequestedEvent;
+import com.example.redemptionservice.event.RedemptionRequestedProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +24,7 @@ class RedemptionOutboxPublisherTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private RedemptionEventProducer redemptionEventProducer;
+    private RedemptionRequestedProducer redemptionRequestedProducer;
 
     @InjectMocks
     private RedemptionOutboxPublisher redemptionOutboxPublisher;
@@ -41,7 +41,7 @@ class RedemptionOutboxPublisherTest {
 
         when(objectMapper.readValue(
                 redemptionOutboxEvent.getPayload(),
-                RedemptionCompletedEvent.class))
+                RedemptionRequestedEvent.class))
                 .thenReturn(redemptionEvent);
 
         assertFalse(redemptionOutboxEvent.isPublished());
@@ -51,7 +51,7 @@ class RedemptionOutboxPublisherTest {
         assertTrue(redemptionOutboxEvent.isPublished());
         assertNotNull(redemptionOutboxEvent.getPublishedAt());
 
-        verify(redemptionEventProducer).publishRedemptionCompleted(redemptionEvent);
+        verify(redemptionRequestedProducer).publishRedemptionRequested(redemptionEvent);
         verify(redemptionOutboxEventRepository).save(redemptionOutboxEvent);
     }
 
@@ -67,20 +67,20 @@ class RedemptionOutboxPublisherTest {
 
         when(objectMapper.readValue(
                 redemptionOutboxEvent.getPayload(),
-                RedemptionCompletedEvent.class))
+                RedemptionRequestedEvent.class))
                 .thenReturn(redemptionEvent);
 
         doThrow(new RuntimeException("Kafka unavailable"))
-                .when(redemptionEventProducer)
-                .publishRedemptionCompleted(redemptionEvent);
+                .when(redemptionRequestedProducer)
+                .publishRedemptionRequested(redemptionEvent);
 
         redemptionOutboxPublisher.publishPendingEvents();
 
         assertFalse(redemptionOutboxEvent.isPublished());
         assertNull(redemptionOutboxEvent.getPublishedAt());
 
-        verify(redemptionEventProducer)
-                .publishRedemptionCompleted(redemptionEvent);
+        verify(redemptionRequestedProducer)
+                .publishRedemptionRequested(redemptionEvent);
 
         verify(redemptionOutboxEventRepository, never())
                 .save(redemptionOutboxEvent);
@@ -94,7 +94,7 @@ class RedemptionOutboxPublisherTest {
 
         redemptionOutboxPublisher.publishPendingEvents();
 
-        verifyNoInteractions(redemptionEventProducer);
+        verifyNoInteractions(redemptionRequestedProducer);
         verifyNoInteractions(objectMapper);
 
         verify(redemptionOutboxEventRepository, never())
@@ -105,14 +105,14 @@ class RedemptionOutboxPublisherTest {
         var redemptionOutboxEvent = new RedemptionOutboxEvent();
         redemptionOutboxEvent.setId(1L);
         redemptionOutboxEvent.setEventId(UUID.randomUUID());
-        redemptionOutboxEvent.setEventType("REDEMPTION_COMPLETED");
+        redemptionOutboxEvent.setEventType("REDEMPTION_REQUESTED");
         redemptionOutboxEvent.setPayload("{\"test\":\"payload\"}");
         redemptionOutboxEvent.setPublished(false);
         return redemptionOutboxEvent;
     }
 
-    private RedemptionCompletedEvent createRedemptionEvent(RedemptionOutboxEvent redemptionOutboxEvent) {
-        var redemptionEvent = new RedemptionCompletedEvent();
+    private RedemptionRequestedEvent createRedemptionEvent(RedemptionOutboxEvent redemptionOutboxEvent) {
+        var redemptionEvent = new RedemptionRequestedEvent();
         redemptionEvent.setRedemptionId(1L);
         redemptionEvent.setEventId(redemptionOutboxEvent.getEventId());
         return redemptionEvent;

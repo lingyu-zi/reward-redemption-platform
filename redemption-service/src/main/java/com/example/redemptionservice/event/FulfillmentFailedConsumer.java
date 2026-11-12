@@ -7,17 +7,20 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class RedemptionCompensationConsumer {
+public class FulfillmentFailedConsumer {
     private final RedemptionCompensationService redemptionCompensationService;
 
     @KafkaListener(
-            topics = "redemption-failed",
-            groupId = "redemption-compensation"
+            topics = "fulfillment-failed",
+            groupId = "redemption-compensation",
+            properties = {
+                    "spring.json.value.default.type=com.example.redemptionservice.event.FulfillmentFailedEvent"
+            }
     )
-    public void consume(RedemptionFailedEvent event) {
+    public void consume(FulfillmentFailedEvent event) {
 
         System.out.println(
-                "Received RedemptionFailedEvent: redemptionId="
+                "Received FulfillmentFailedEvent: redemptionId="
                         + event.getRedemptionId()
                         + ", pointsToReturn="
                         + event.getPointsToReturn()

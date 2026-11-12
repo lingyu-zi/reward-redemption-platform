@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class RedemptionCompletedEvent {
+public class RedemptionRequestedEvent {
     UUID eventId;
     Instant occurredAt;
     Long customerId;

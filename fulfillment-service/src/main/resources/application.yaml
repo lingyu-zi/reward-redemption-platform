@@ -1,6 +1,9 @@
 server:
   port: 8086
 
+merchant-provider:
+  base-url: http://localhost:8087
+
 spring:
   application:
     name: fulfillment-service
@@ -26,7 +29,7 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
         spring.json.use.type.headers: false
-        spring.json.value.default.type: com.example.fulfillmentservice.event.RedemptionCompletedEvent
+        spring.json.value.default.type: com.example.fulfillmentservice.event.RedemptionRequestedEvent
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

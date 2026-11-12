@@ -6,20 +6,20 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class RedemptionFailureProducer {
-    private final KafkaTemplate<String, RedemptionFailedEvent> kafkaTemplate;
+public class FulfillmentFailedProducer {
+    private final KafkaTemplate<String, FulfillmentFailedEvent> kafkaTemplate;
 
-    public void publish(RedemptionFailedEvent event) {
+    public void publishFulfillmentFailed(FulfillmentFailedEvent event) {
 
         System.out.println(
-                "Publishing RedemptionFailedEvent: redemptionId="
+                "Publishing FulfillmentFailedEvent: redemptionId="
                         + event.getRedemptionId()
                         + ", pointsToReturn="
                         + event.getPointsToReturn()
         );
 
         kafkaTemplate.send(
-                "redemption-failed",
+                "fulfillment-failed",
                 event.getRedemptionId().toString(),
                 event
         ).join();
