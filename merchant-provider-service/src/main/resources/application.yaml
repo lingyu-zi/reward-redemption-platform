@@ -6,4 +6,4 @@ spring:
     name: merchant-provider-service
 
 mock-provider:
-  scenario: SUCCESS
+  scenario: UNAVAILABLE

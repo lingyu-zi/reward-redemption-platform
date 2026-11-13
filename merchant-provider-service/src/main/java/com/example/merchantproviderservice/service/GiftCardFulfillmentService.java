@@ -2,6 +2,7 @@ package com.example.merchantproviderservice.service;
 
 import com.example.merchantproviderservice.dto.GiftCardFulfillmentRequest;
 import com.example.merchantproviderservice.dto.GiftCardFulfillmentResponse;
+import com.example.merchantproviderservice.exception.BadRequestException;
 import com.example.merchantproviderservice.exception.OutOfStockException;
 import com.example.merchantproviderservice.exception.ProviderUnavailableException;
 import com.example.merchantproviderservice.fulfillment.FulfillmentScenario;
@@ -43,8 +44,13 @@ public class GiftCardFulfillmentService {
 
             case UNAVAILABLE ->
                     throw new ProviderUnavailableException(
-                            "Merchant provider is unavailable"
+                            "Invalid gift card fulfillment request"
                     );
+
+            case BAD_REQUEST ->
+                throw new BadRequestException(
+                        "Gift card request is invalid"
+                );
 
             case TIMEOUT -> {
                 try {

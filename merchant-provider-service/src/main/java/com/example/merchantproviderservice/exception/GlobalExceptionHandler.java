@@ -31,8 +31,20 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
                         "error",
-                        "Invalid scenario. Allowed values are: " +
-                                "SUCCESS, OUT_OF_STOCK, UNAVAILABLE, TIMEOUT"
+                        "Invalid request body"
+                ));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, String>>
+    handleBadRequestException(
+            BadRequestException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error",
+                        exception.getMessage()
                 ));
     }
 
@@ -59,6 +71,4 @@ public class GlobalExceptionHandler {
                         exception.getMessage()
                 ));
     }
-
-
 }

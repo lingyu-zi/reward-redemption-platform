@@ -2,13 +2,19 @@ package com.example.fulfillmentservice.fulfillment;
 
 import com.example.fulfillmentservice.event.*;
 import com.example.fulfillmentservice.merchant.MerchantProviderClient;
+import com.example.fulfillmentservice.merchant.exception.MerchantProviderTimeoutException;
+import com.example.fulfillmentservice.merchant.exception.MerchantProviderUnavailableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class FulfillmentService {
@@ -33,10 +39,17 @@ public class FulfillmentService {
             merchantProviderClient.fulfill(event);
 
         } catch (Exception e) {
+            var failureReason = getFailureReason(e);
+
+            log.error(
+                    "Merchant fulfillment failed: redemptionId={}, reason={}",
+                    event.getRedemptionId(),
+                    failureReason,
+                    e
+            );
+
             fulfillmentRecord.setStatus(FulfillmentStatus.FAILED);
-            var reason = e.getMessage() != null ?
-                    e.getMessage() : "Merchant fulfillment failed";
-            fulfillmentRecord.setFailureReason(reason);
+            fulfillmentRecord.setFailureReason(failureReason);
 
             fulfillmentRecordRepository.save(fulfillmentRecord);
 
@@ -46,7 +59,7 @@ public class FulfillmentService {
             failedEvent.setCustomerId(event.getCustomerId());
             failedEvent.setRedemptionId(event.getRedemptionId());
             failedEvent.setPointsToReturn(-event.getPointsChange());
-            failedEvent.setReason(reason);
+            failedEvent.setReason(failureReason);
 
             fulfillmentFailedProducer.publishFulfillmentFailed(failedEvent);
 
@@ -80,5 +93,29 @@ public class FulfillmentService {
         record.setAttemptCount(0);
 
         return record;
+    }
+
+    private String getFailureReason(Exception ex){
+        if (ex instanceof MerchantProviderTimeoutException) {
+            return "Merchant provider timed out";
+        }
+
+        if (ex instanceof MerchantProviderUnavailableException) {
+            return "Merchant provider unavailable";
+        }
+
+        if (ex instanceof CallNotPermittedException) {
+            return "Merchant provider circuit breaker is open";
+        }
+
+        if (ex instanceof HttpClientErrorException.Conflict) {
+            return "Merchant provider out of stock";
+        }
+
+        if (ex instanceof HttpClientErrorException.BadRequest) {
+            return "Merchant provider rejected the request";
+        }
+
+        return "Merchant fulfillment failed";
     }
 }
